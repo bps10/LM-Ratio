@@ -12,6 +12,7 @@ from guidata.dataset.datatypes import DataSet
 from guidata.dataset.dataitems import FloatItem, StringItem
 
 import numpy as np
+import sys, os
 from analyze_LMratio import LMratio
 from base import spectsens as spect
 from base import optics as o
@@ -26,6 +27,7 @@ class Param(DataSet):
     data1 = FloatItem(label='LED1')
     data2 = FloatItem(label='LED2')
     data3 = FloatItem(label='LED3')
+
 
 class CentralWidget(QSplitter):
     def __init__(self, parent):
@@ -81,12 +83,12 @@ class CentralWidget(QSplitter):
         '''
         '''
         self.properties_changed()
-        self.show_data(save_plot=True, PRINT=True)
+        self.show_data(save_plot=True, save_data=True, PRINT=True)
         message = []
         message.append('Plot saved.')
         self.results.addItems(message) 
 
-    def show_data(self, save_plot=False, PRINT=True):
+    def show_data(self, save_plot=False, save_data=False, PRINT=True):
         '''
         '''
         LM = LMratio()
@@ -119,7 +121,6 @@ class CentralWidget(QSplitter):
                     color='k', linewidth=2),
                 make.curve(data_x, data_y, linestyle='NoPen',
                     marker="Diamond", markersize=14, markerfacecolor='k')
-                #make.legend("TR"),
                 )
         self.plots.plot.del_all_items()
         for item in items:
@@ -136,9 +137,24 @@ class CentralWidget(QSplitter):
             self.results.clear()
             self.results.addItems(message) 
 
+        if save_plot or save_data:
+            directory = 'C:\Users\Public\Documents\\' + self.name + '\\'
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+            trial = 1
+            file_name = directory + self.name + '_' + str(trial)
+            while os.path.exists(file_name + '.csv'):
+                trial += 1
+                file_name = directory + self.name + '_' + str(trial)
+
         if save_plot:
-            LM.plot_lm_ratio(save_name=self.name, save_plot=True,
-                show_plot=False)
+            LM.plot_lm_ratio(
+                save_name=file_name, 
+                save_plot=True, show_plot=False)
+
+        if save_data:
+            LM.save_data_and_params(file_name)
 
         del LM
 

@@ -2,8 +2,10 @@ from __future__ import division
 import numpy as np
 import matplotlib.pylab as plt
 from scipy.optimize import minimize
-import sys
-sys.path.append("/Users/brianschmidt/Projects")
+import sys, os
+# make sure base module is on path
+p = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.dirname(p))
 
 from base import plot as pf
 from base import spectsens as spect
@@ -16,7 +18,7 @@ class LMratio():
 	1. report error in estimate
 	'''
 
-	def __init__(self, LED_path='lm_ratio/LEDspectra2.csv'):
+	def __init__(self, LED_path='LEDspectra.csv'):
 		'''
 		'''
 		self.cones = {}
@@ -47,6 +49,11 @@ class LMratio():
 		d[3] = np.mean(np.asarray(light3))
 
 		self.data = {}
+		self.data['raw_ref'] = np.mean(np.asarray(ref))
+		self.data['raw_1'] = np.mean(np.asarray(light1))
+		self.data['raw_2'] = np.mean(np.asarray(light2))
+		self.data['raw_3'] = np.mean(np.asarray(light3))
+
 		self.data['STDref'] = np.std(np.asarray(ref))
 		self.data['STD1'] = np.std(np.asarray(light1))
 		self.data['STD2'] = np.std(np.asarray(light2))
@@ -262,6 +269,32 @@ class LMratio():
 		ax2.set_xlim([400, 700])
 		plt.show()
 
+	def save_data_and_params(self, save_name='LM ratio'):
+		'''
+		'''
+		data = {}
+		self.gen_LM_fit()
+		norm = self.diff_sens(self.fit)
+		data['ref'] = self.data['raw_ref']
+		data['LED1'] = self.data['raw_1']
+		data['LED2'] = self.data['raw_2']
+		data['LED3'] = self.data['raw_3']
+
+		data['L_perc'] = self.l_frac[0] * 100
+		data['M_perc'] = 100 - data['L_perc']
+		data['lm_error'] = self.l_frac_error * 100
+
+		data['L_peak'] = str(self.cones['L_peak'])
+		data['M_peak'] = str(self.cones['M_peak'])
+		data['age'] = self.age
+
+		txt = ''
+		for key in data:
+			txt += key + ',' + str(data[key]) + '\n'
+		fil = open(save_name + '.csv', 'w')
+		fil.write(txt)
+		fil.close()
+
 	def return_fit(self):
 		'''
 		'''
@@ -327,3 +360,4 @@ if __name__ == '__main__':
 	LM.find_LMratio()
 	#LM.plot_spectrum_cones()
 	LM.plot_lm_ratio()
+	LM.save_data_and_params()
