@@ -2,10 +2,6 @@ from __future__ import division
 import numpy as np
 import matplotlib.pylab as plt
 from scipy.optimize import minimize
-import sys, os
-# make sure base module is on path
-p = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.dirname(p))
 
 from base import plot as pf
 from base import spectsens as spect
