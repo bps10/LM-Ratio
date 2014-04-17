@@ -13,9 +13,6 @@ except ImportError:
 import spyderlib
 import git as git
 
-import sys
-sys.path.append("C:/Users/Brian/Documents/Projects")
-sys.path.append("C:/Python27/Lib/lib-tk")
 import base
 
 Info = git.Repo()
