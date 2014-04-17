@@ -1,6 +1,6 @@
 from __future__ import division
 from guidata.qt.QtGui import (QFont, QSplitter, QMainWindow, 
-    QListWidget, QPushButton)
+    QListWidget, QPushButton, QFileDialog, QDialog)
 from guidata.qt.QtCore import QSize, Qt, SIGNAL
 from guidata.dataset.qtwidgets import DataSetEditGroupBox
 from guidata.configtools import get_icon
@@ -36,29 +36,43 @@ class CentralWidget(QSplitter):
         self.setContentsMargins(10, 10, 10, 10)
         self.setOrientation(Qt.Vertical)
 
-        bottom = QSplitter()
+        # set up left side of the bottom panel        
         self.properties = DataSetEditGroupBox(("Properties"), Param,
              button_text='OK')
         self.properties.setEnabled(True)
-        bottom.addWidget(self.properties)
- 
-        right_side = QSplitter()
-        right_side.setOrientation(Qt.Vertical)
-        self.results = QListWidget(self)
-        self.button = QPushButton('save plot', self.results)
-        self.button.clicked.connect(self.handleButton)  
-
-        right_side.addWidget(self.results)
-        right_side.addWidget(self.button)
-        self.addWidget(right_side) 
-
-        bottom.addWidget(right_side)
-
         self.connect(self.properties, SIGNAL("apply_button_clicked()"),
                      self.properties_changed)
+        self.load_button = QPushButton('load data', self.properties)
+        self.load_button.clicked.connect(self.load) 
+
+        # add left side of the bottom panel
+        left_side = QSplitter()
+        left_side.setOrientation(Qt.Vertical)
+        left_side.addWidget(self.load_button)
+        left_side.addWidget(self.properties)
+
+        # set up right side of the bottom panel
+        self.results = QListWidget(self)
+        self.save_button = QPushButton('save', self.results)
+        self.save_button.clicked.connect(self.save)  
+
+        # add right side of the bottom panel
+        right_side = QSplitter()
+        right_side.setOrientation(Qt.Vertical)
+        right_side.addWidget(self.results)
+        right_side.addWidget(self.save_button)
+        self.addWidget(right_side) 
+
+        # add left and right side to bottom
+        bottom = QSplitter()
+        bottom.addWidget(left_side)
+        bottom.addWidget(right_side)
 
         self.plots = CurveWidget(self, 
             xlabel='wavelength (nm)', ylabel='sensitivity')
+
+        self.addWidget(self.plots)
+        self.addWidget(bottom)
 
         self.age = 26
         self.peakL = 559
@@ -71,15 +85,46 @@ class CentralWidget(QSplitter):
         self.M_OD = 0.22
         self.show_data(PRINT=False)    
 
-        self.addWidget(self.plots)
-        self.addWidget(bottom)
-
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 1)
         self.setHandleWidth(10)
         self.setSizes([800, 1])
 
-    def handleButton(self):
+    def load(self):
+        '''
+        '''
+        # Open a file finder. Load the csv file.
+        name = QFileDialog.getOpenFileName()
+        f = open(name, 'r')
+        raw_dat = f.read()
+        f.close()
+
+        data = {}
+        lines = raw_dat.split('\n')
+        for line in lines:
+            if line != '':
+                stuff = line.split(',')
+                data[stuff[0]] = float(stuff[1])
+
+        if 'name' in data:
+            self.properties.dataset.name = data['name']
+        if 'age' in data:
+            self.properties.dataset.age = data['age']
+        if 'L_peak' in data:
+            self.properties.dataset.lpeak = data['L_peak']
+        if 'M_peak' in data:
+            self.properties.dataset.mpeak = data['M_peak']
+        if 'ref' in data:    
+            self.properties.dataset.data0 = data['ref']
+        if 'LED1' in data:   
+            self.properties.dataset.data1 = data['LED1']
+        if 'LED2' in data:
+            self.properties.dataset.data2 = data['LED2']
+        if 'LED3' in data:
+            self.properties.dataset.data3 = data['LED3']
+
+
+    def save(self):
         '''
         '''
         self.properties_changed()

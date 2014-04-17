@@ -131,9 +131,7 @@ class LMratio():
 		lm_ratio = self.l_frac / (1 - self.l_frac)
 
 		if correct:	
-			# correction factor from Hofer et al. 2005
-			lm_ratio *= 1.5 
-			self.l_frac = lm_ratio / (1 + lm_ratio)
+			self.l_frac = self._correct_lm_ratio()
 
 		if PRINT:
 			print self.l_frac_error
@@ -142,6 +140,14 @@ class LMratio():
 
 		if RETURN:
 			return self.l_frac, self.l_frac_error
+
+	def _correct_lm_ratio(self, factor=1.5):
+		'''
+		'''
+		lm_ratio = self.l_frac / (1 - self.l_frac)
+		# correction factor from Hofer et al. 2005
+		lm_ratio *= factor 
+		return lm_ratio / (1 + lm_ratio)
 
 	def gen_LM_fit(self):
 		'''
@@ -282,6 +288,8 @@ class LMratio():
 
 		data['L_perc'] = self.l_frac[0] * 100
 		data['M_perc'] = 100 - data['L_perc']
+		data['L_corr'] = self._correct_lm_ratio()[0] * 100
+		data['M_corr'] = 100 - data['L_corr']
 		data['lm_error'] = self.l_frac_error * 100
 
 		data['L_peak'] = str(self.cones['L_peak'])
