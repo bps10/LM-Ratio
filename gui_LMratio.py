@@ -1,55 +1,120 @@
 from __future__ import division
-from guidata.qt.QtGui import (QFont, QSplitter, QMainWindow, 
-    QListWidget, QPushButton, QFileDialog, QDialog)
-from guidata.qt.QtCore import QSize, Qt, SIGNAL
-from guidata.dataset.qtwidgets import DataSetEditGroupBox
+from guidata.qt.QtGui import (QSplitter, QMainWindow, 
+    QListWidget, QPushButton, QFileDialog, QLineEdit, QLabel)
+from guidata.qt.QtCore import QSize, Qt
 from guidata.configtools import get_icon
 from guidata.qthelpers import create_action, add_actions, get_std_icon
 
 from guiqwt.plot import CurveDialog, CurveWidget
 from guiqwt.builder import make
-from guidata.dataset.datatypes import DataSet
-from guidata.dataset.dataitems import FloatItem, StringItem
 
 import numpy as np
 import sys, os
+
 from analyze_LMratio import LMratio
 from base import spectsens as spect
 from base import optics as o
-
-
-class Param(DataSet):
-    name = StringItem(("name"), default=("sample"))
-    age = FloatItem(label='age', default=26)
-    lpeak = FloatItem(label='peak L', default=559)
-    mpeak = FloatItem(label='peak M', default=530)
-    data0 = FloatItem(label='ref LED', default=10)
-    data1 = FloatItem(label='LED1')
-    data2 = FloatItem(label='LED2')
-    data3 = FloatItem(label='LED3')
 
 
 class CentralWidget(QSplitter):
     def __init__(self, parent):
         QSplitter.__init__(self, parent)
 
+        self.name = 'subject'
+        self.age = 26
+        self.peakL = 559
+        self.peakM = 530
+        self.ref_LED = 10
+        self.LED1 = 15
+        self.LED2 = 13.9
+        self.LED3 = 40.45
+        self.L_OD = 0.35
+        self.M_OD = 0.22
+
         self.setContentsMargins(10, 10, 10, 10)
         self.setOrientation(Qt.Vertical)
+        
+        line1 = QSplitter()
+        line1.setOrientation(Qt.Horizontal)
+        line2 = QSplitter()
+        line2.setOrientation(Qt.Horizontal)
+        line3 = QSplitter()
+        line3.setOrientation(Qt.Horizontal)
+        line4 = QSplitter()
+        line4.setOrientation(Qt.Horizontal)
+        line5 = QSplitter()
+        line5.setOrientation(Qt.Horizontal)
+        line6 = QSplitter()
+        line6.setOrientation(Qt.Horizontal)
+        line7 = QSplitter()
+        line7.setOrientation(Qt.Horizontal)
+        line8 = QSplitter()
+        line8.setOrientation(Qt.Horizontal)
 
-        # set up left side of the bottom panel        
-        self.properties = DataSetEditGroupBox(("Properties"), Param,
-             button_text='OK')
-        self.properties.setEnabled(True)
-        self.connect(self.properties, SIGNAL("apply_button_clicked()"),
-                     self.properties_changed)
-        self.load_button = QPushButton('load data', self.properties)
+        self.txt1 = QLineEdit(str(self.name))
+        self.txt1.setMaximumWidth(100)
+        self.txt2 = QLineEdit(str(self.age))
+        self.txt2.setMaximumWidth(100)
+        self.txt3 = QLineEdit(str(self.peakL))
+        self.txt3.setMaximumWidth(100)
+        self.txt4 = QLineEdit(str(self.peakM))
+        self.txt4.setMaximumWidth(100)
+        self.txt5 = QLineEdit(str(self.ref_LED))
+        self.txt5.setMaximumWidth(100)
+        self.txt6 = QLineEdit()
+        self.txt6.setMaximumWidth(100)
+        self.txt7 = QLineEdit()
+        self.txt7.setMaximumWidth(100)
+        self.txt8 = QLineEdit()
+        self.txt8.setMaximumWidth(100)
+
+        label1 = QLabel('name')
+        label2 = QLabel('age')
+        label3 = QLabel('peak L')
+        label4 = QLabel('peak M')
+        label5 = QLabel('ref LED')
+        label6 = QLabel('LED1')
+        label7 = QLabel('LED2')
+        label8 = QLabel('LED3')
+
+        line1.addWidget(label1)
+        line2.addWidget(label2)
+        line3.addWidget(label3)
+        line4.addWidget(label4)
+        line5.addWidget(label5)
+        line6.addWidget(label6)
+        line7.addWidget(label7)
+        line8.addWidget(label8)
+
+        line1.addWidget(self.txt1)
+        line2.addWidget(self.txt2)
+        line3.addWidget(self.txt3)
+        line4.addWidget(self.txt4)
+        line5.addWidget(self.txt5)
+        line6.addWidget(self.txt6)
+        line7.addWidget(self.txt7)
+        line8.addWidget(self.txt8)
+
+        self.load_button = QPushButton('load data')
         self.load_button.clicked.connect(self.load) 
+
+        self.analyze_button = QPushButton('analyze')
+        self.analyze_button.clicked.connect(self.analyze) 
 
         # add left side of the bottom panel
         left_side = QSplitter()
         left_side.setOrientation(Qt.Vertical)
         left_side.addWidget(self.load_button)
-        left_side.addWidget(self.properties)
+        left_side.addWidget(line1)
+        left_side.addWidget(line2)
+        left_side.addWidget(line3)
+        left_side.addWidget(line4)
+        left_side.addWidget(line5)
+        left_side.addWidget(line6)
+        left_side.addWidget(line7)
+        left_side.addWidget(line8)
+        left_side.addWidget(self.analyze_button)
+
 
         # set up right side of the bottom panel
         self.results = QListWidget(self)
@@ -74,15 +139,6 @@ class CentralWidget(QSplitter):
         self.addWidget(self.plots)
         self.addWidget(bottom)
 
-        self.age = 26
-        self.peakL = 559
-        self.peakM = 530
-        self.ref_LED = 10
-        self.LED1 = 15
-        self.LED2 = 13.9
-        self.LED3 = 40.45
-        self.L_OD = 0.35
-        self.M_OD = 0.22
         self.show_data(PRINT=False)    
 
         self.setStretchFactor(0, 0)
@@ -90,44 +146,93 @@ class CentralWidget(QSplitter):
         self.setHandleWidth(10)
         self.setSizes([800, 1])
 
+    def analyze(self):
+        '''
+        '''
+        self.get_input_values()
+        # analyze
+        self.show_data()
+
+    def get_input_values(self):
+        '''
+        '''
+        # check that values in
+        try:
+            self.name = str(self.txt1.displayText())
+            self.age = float(self.txt2.displayText())
+            self.peakL = float(self.txt3.displayText())
+            self.peakM = float(self.txt4.displayText())
+            self.ref_LED = float(self.txt5.displayText())
+            self.LED1 = float(self.txt6.displayText())
+            self.LED2 = float(self.txt7.displayText())
+            self.LED3 = float(self.txt8.displayText())
+        except ValueError:
+            message = []
+            message.append('ERROR: Make sure values were entered \nproperly.')
+            self.results.addItems(message) 
+
     def load(self):
         '''
         '''
         # Open a file finder. Load the csv file.
         name = QFileDialog.getOpenFileName()
-        f = open(name, 'r')
-        raw_dat = f.read()
-        f.close()
+        try:
+            f = open(name, 'r')
+            raw_dat = f.read()
+            f.close()
+            proceed = True
+        except IOError:
+            message = []
+            message.append('Could not open file.')
+            self.results.addItems(message) 
+            proceed = False       
 
-        data = {}
-        lines = raw_dat.split('\n')
-        for line in lines:
-            if line != '':
-                stuff = line.split(',')
-                data[stuff[0]] = float(stuff[1])
+        if proceed:
+            data = {}
+            lines = raw_dat.split('\n')
+            for line in lines:
+                if line != '':
+                    stuff = line.split(',')
+                    data[stuff[0]] = float(stuff[1])
 
-        if 'name' in data:
-            self.properties.dataset.name = data['name']
-        if 'age' in data:
-            self.properties.dataset.age = data['age']
-        if 'L_peak' in data:
-            self.properties.dataset.lpeak = data['L_peak']
-        if 'M_peak' in data:
-            self.properties.dataset.mpeak = data['M_peak']
-        if 'ref' in data:    
-            self.properties.dataset.data0 = data['ref']
-        if 'LED1' in data:   
-            self.properties.dataset.data1 = data['LED1']
-        if 'LED2' in data:
-            self.properties.dataset.data2 = data['LED2']
-        if 'LED3' in data:
-            self.properties.dataset.data3 = data['LED3']
+            if 'name' in data:
+                self.txt1.setText(str(data['name']))
+            else:
+                self.txt1.setText('')
+            if 'age' in data:
+                self.txt2.setText(str(data['age']))
+            else:
+                self.txt2.setText('')
+            if 'L_peak' in data:
+                self.txt3.setText(str(data['L_peak']))
+            else:
+                self.txt3.setText('')
+            if 'M_peak' in data:
+                self.txt4.setText(str(data['M_peak']))
+            else:
+                self.txt4.setText('')
+            if 'ref' in data:    
+                self.txt5.setText(str(data['ref']))
+            else:
+                self.txt5.setText('')
+            if 'LED1' in data:   
+                self.txt6.setText(str(data['LED1']))
+            else:
+                self.txt6.setText('')
+            if 'LED2' in data:
+                self.txt7.setText(str(data['LED2']))
+            else:
+                self.txt7.setText('')
+            if 'LED3' in data:
+                self.txt8.setText(str(data['LED3']))
+            else:
+                self.txt8.setText('')
 
 
     def save(self):
         '''
         '''
-        self.properties_changed()
+        self.get_input_values()
         self.show_data(save_plot=True, save_data=True, PRINT=True)
         message = []
         message.append('Plot saved.')
@@ -203,17 +308,6 @@ class CentralWidget(QSplitter):
 
         del LM
 
-    def properties_changed(self):
-        """The properties 'Apply' button was clicked: updating image"""
-        self.name = self.properties.dataset.name
-        self.age = self.properties.dataset.age
-        self.peakL = self.properties.dataset.lpeak
-        self.peakM = self.properties.dataset.mpeak
-        self.ref_LED = self.properties.dataset.data0
-        self.LED1 = self.properties.dataset.data1
-        self.LED2 = self.properties.dataset.data2
-        self.LED3 = self.properties.dataset.data3      
-        self.show_data()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -235,10 +329,10 @@ class MainWindow(QMainWindow):
                 triggered=self.close)
         add_actions(file_menu, (quit_action,))
 
-        help_menu = self.menuBar().addMenu("Edit")
-        change_OD_action = create_action(self, ("Parameters"),
+        #help_menu = self.menuBar().addMenu("Edit")
+        #change_OD_action = create_action(self, ("Parameters"),
                  triggered=self.change_OD)
-        add_actions(help_menu, (change_OD_action,))
+        #add_actions(help_menu, (change_OD_action,))
         
 
         # Set central widget:
