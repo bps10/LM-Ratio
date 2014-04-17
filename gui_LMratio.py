@@ -149,15 +149,18 @@ class CentralWidget(QSplitter):
     def analyze(self):
         '''
         '''
-        self.get_input_values()
-        # analyze
-        self.show_data()
+        success = self.get_input_values()
+        if success:
+            # analyze
+            self.show_data()
 
     def get_input_values(self):
         '''
         '''
         # check that values in
         try:
+            if len(str(self.txt1.displayText())) < 2:
+                raise ValueError('No subject name')
             self.name = str(self.txt1.displayText())
             self.age = float(self.txt2.displayText())
             self.peakL = float(self.txt3.displayText())
@@ -166,11 +169,13 @@ class CentralWidget(QSplitter):
             self.LED1 = float(self.txt6.displayText())
             self.LED2 = float(self.txt7.displayText())
             self.LED3 = float(self.txt8.displayText())
+            return True
 
         except ValueError:
             message = []
             message.append('ERROR: Make sure values were entered \nproperly.')
             self.results.addItems(message) 
+            return False
 
     def load(self):
         '''
@@ -194,31 +199,34 @@ class CentralWidget(QSplitter):
             for line in lines:
                 if line != '':
                     d = line.split(',')
-                    len_d = len(d[1:])
-                    data[d[0]] = np.array(d[1], dtype=float)
+                    array = []
+                    for num in d[1:]:
+                        if num != '':
+                            array.append(num)
+                    data[d[0]] = np.asarray(array, dtype=float)
 
             if 'name' in data:
-                self.txt1.setText(str(data['name']))
+                self.txt1.setText(str(data['name'][0]))
             else:
                 self.txt1.setText('')
             if 'age' in data:
-                self.txt2.setText(str(data['age']))
+                self.txt2.setText(str(data['age'][0]))
             else:
                 self.txt2.setText('')
             if 'L_peak' in data:
-                self.txt3.setText(str(data['L_peak']))
+                self.txt3.setText(str(data['L_peak'][0]))
             else:
                 self.txt3.setText('')
             if 'M_peak' in data:
-                self.txt4.setText(str(data['M_peak']))
+                self.txt4.setText(str(data['M_peak'][0]))
             else:
                 self.txt4.setText('')
             if 'ref' in data:    
-                self.txt5.setText(str(data['ref']))
+                self.txt5.setText(str(data['ref'][0]))
             else:
                 self.txt5.setText('')
             if 'LED1' in data:   
-                self.txt6.setText(str(np.mean(data['LED1']))))
+                self.txt6.setText(str(np.mean(data['LED1'])))
             else:
                 self.txt6.setText('')
             if 'LED2' in data:
@@ -234,12 +242,17 @@ class CentralWidget(QSplitter):
     def save(self):
         '''
         '''
-        self.get_input_values()
-        self.show_data(save_plot=True, save_data=True, PRINT=True)
-        message = []
-        message.append('Plot saved.')
-        self.results.addItems(message) 
-
+        success = self.get_input_values()
+        if success:
+            self.show_data(save_plot=True, save_data=True, PRINT=True)
+            message = []
+            message.append('Success! Plot and data saved.')
+            self.results.addItems(message) 
+        else:
+            self.show_data(save_plot=True, save_data=True, PRINT=True)
+            message = []
+            message.append('Check input values. Data not saved')
+            self.results.addItems(message) 
     def show_data(self, save_plot=False, save_data=False, PRINT=True):
         '''
         '''
@@ -333,7 +346,7 @@ class MainWindow(QMainWindow):
 
         #help_menu = self.menuBar().addMenu("Edit")
         #change_OD_action = create_action(self, ("Parameters"),
-                 triggered=self.change_OD)
+        #         triggered=self.change_OD)
         #add_actions(help_menu, (change_OD_action,))
         
 
