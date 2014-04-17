@@ -166,6 +166,7 @@ class CentralWidget(QSplitter):
             self.LED1 = float(self.txt6.displayText())
             self.LED2 = float(self.txt7.displayText())
             self.LED3 = float(self.txt8.displayText())
+
         except ValueError:
             message = []
             message.append('ERROR: Make sure values were entered \nproperly.')
@@ -192,8 +193,9 @@ class CentralWidget(QSplitter):
             lines = raw_dat.split('\n')
             for line in lines:
                 if line != '':
-                    stuff = line.split(',')
-                    data[stuff[0]] = float(stuff[1])
+                    d = line.split(',')
+                    len_d = len(d[1:])
+                    data[d[0]] = np.array(d[1], dtype=float)
 
             if 'name' in data:
                 self.txt1.setText(str(data['name']))
@@ -216,15 +218,15 @@ class CentralWidget(QSplitter):
             else:
                 self.txt5.setText('')
             if 'LED1' in data:   
-                self.txt6.setText(str(data['LED1']))
+                self.txt6.setText(str(np.mean(data['LED1']))))
             else:
                 self.txt6.setText('')
             if 'LED2' in data:
-                self.txt7.setText(str(data['LED2']))
+                self.txt7.setText(str(np.mean(data['LED2'])))
             else:
                 self.txt7.setText('')
             if 'LED3' in data:
-                self.txt8.setText(str(data['LED3']))
+                self.txt8.setText(str(np.mean(data['LED3'])))
             else:
                 self.txt8.setText('')
 
