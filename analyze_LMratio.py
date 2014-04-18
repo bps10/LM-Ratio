@@ -9,9 +9,6 @@ from base import optics as o
 
 class LMratio():
 	'''
-	ToDo
-	=====
-	1. report error in estimate
 	'''
 
 	def __init__(self, LED_path='dat/LEDspectra.csv'):
@@ -286,7 +283,7 @@ class LMratio():
 		data['M_perc'] = 100 - data['L_perc']
 		data['L_corr'] = self._correct_lm_ratio()[0] * 100
 		data['M_corr'] = 100 - data['L_corr']
-		data['lm_error'] = self.l_frac_error * 100
+		data['lm_error'] = self.l_frac_error
 
 		data['L_peak'] = str(self.cones['L_peak'])
 		data['M_peak'] = str(self.cones['M_peak'])

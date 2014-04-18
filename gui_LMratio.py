@@ -76,7 +76,7 @@ class CentralWidget(QSplitter):
         self.txt8 = QLineEdit()
         self.txt8.setMaximumWidth(100)
 
-        label1 = QLabel('name')
+        label1 = QLabel('ID')
         label2 = QLabel('age')
         label3 = QLabel('peak L')
         label4 = QLabel('peak M')
@@ -259,16 +259,14 @@ class CentralWidget(QSplitter):
     def save(self):
         '''
         '''
-        success = self.get_input_values()
-        if success:
+        try:
             self.show_data(save_plot=True, save_data=True, PRINT=True)
             message = []
             message.append('Success! Plot and data saved.')
             self.results.addItems(message) 
-        else:
-            self.show_data(save_plot=True, save_data=True, PRINT=True)
+        except:
             message = []
-            message.append('Check input values. Data not saved')
+            message.append('ERROR! Plot and data  were not \nsaved.')
             self.results.addItems(message) 
 
     def show_data(self, save_plot=False, save_data=False, PRINT=True):
@@ -288,8 +286,8 @@ class CentralWidget(QSplitter):
         data_x = _data['LED_peaks']
         data_y = np.log10(
             np.array([_data['ref'], _data[1], _data[2], _data[3]]))
+        
         # get fit
-
         spectrum = LM.return_spectrum()
         cones = LM.return_cones()
         fit = np.log10(LM.return_fit())
@@ -375,7 +373,6 @@ class MainWindow(QMainWindow):
     def change_save_dir(self):
         '''
         '''
-        #self.mainwidget.save_dir = 'C:\\Users\\Brian\\'
         name = QFileDialog.getExistingDirectory()
         self.mainwidget.save_dir = str(name) + '\\'
 
@@ -384,7 +381,7 @@ class MainWindow(QMainWindow):
         if str(name) != '':
             params['SAVE_DIR'] = str(name)  + '\\'
             handle.close()
-            # write new directory
+            # write new directory to app data file
             handle = open(APP_DIR + '\\lm_ratiorc.txt', 'w')
             json.dump(params, handle)
             handle.close()

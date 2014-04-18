@@ -20,7 +20,7 @@ Info = git.Repo()
 def create_executable():
     """Build executable using ``guidata.disthelpers``"""
     dist = Distribution()
-    dist.setup(name="LM ratio", version="0.1",
+    dist.setup(name="LM ratio", version="0.2",
                description=u"A gui for computing LM ratio",
                script="gui_LMratio.py", target_name="LMratio.exe")
                
