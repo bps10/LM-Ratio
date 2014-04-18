@@ -1,0 +1,4 @@
+{
+    "SAVE_DIR": "C:\\Users\\Public\\Documents\\"
+}
+

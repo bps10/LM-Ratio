@@ -9,12 +9,20 @@ from guiqwt.plot import CurveDialog, CurveWidget
 from guiqwt.builder import make
 
 import numpy as np
-import sys, os
+import sys, os, json, shutil
+import appdirs as app
 
 from analyze_LMratio import LMratio
 from base import spectsens as spect
 from base import optics as o
 
+APPNAME = 'LM ratio'
+APPAUTH = 'Neitz lab'
+APP_DIR = app.user_data_dir(APPNAME, APPAUTH)
+if not os.path.exists(APP_DIR):
+    os.makedirs(APP_DIR)
+if not os.path.exists(APP_DIR + '\\lm_ratiorc.txt'):
+    shutil.copyfile('lm_ratiorc.txt', APP_DIR + '\\lm_ratiorc.txt')
 
 class CentralWidget(QSplitter):
     def __init__(self, parent):
@@ -146,6 +154,15 @@ class CentralWidget(QSplitter):
         self.setHandleWidth(10)
         self.setSizes([800, 1])
 
+        self.parse_rc_file()
+
+    def parse_rc_file(self):
+        '''
+        '''
+        handle = open(APP_DIR + '\\lm_ratiorc.txt', 'r')
+        params = json.load(handle)
+        self.save_dir = params['SAVE_DIR']
+
     def analyze(self):
         '''
         '''
@@ -253,6 +270,7 @@ class CentralWidget(QSplitter):
             message = []
             message.append('Check input values. Data not saved')
             self.results.addItems(message) 
+
     def show_data(self, save_plot=False, save_data=False, PRINT=True):
         '''
         '''
@@ -303,7 +321,7 @@ class CentralWidget(QSplitter):
             self.results.addItems(message) 
 
         if save_plot or save_data:
-            directory = 'C:\Users\Public\Documents\\' + self.name + '\\'
+            directory = self.save_dir + self.name + '\\'
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
@@ -328,9 +346,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setup()
-        
+
     def setup(self):
-        """Setup window parameters"""
+        '''Setup window parameters
+        '''
         self.setWindowIcon(get_icon('python.png'))
         self.setWindowTitle('LM cone ratios')
         self.resize(QSize(400, 600))
@@ -344,19 +363,33 @@ class MainWindow(QMainWindow):
                 triggered=self.close)
         add_actions(file_menu, (quit_action,))
 
-        #help_menu = self.menuBar().addMenu("Edit")
-        #change_OD_action = create_action(self, ("Parameters"),
-        #         triggered=self.change_OD)
-        #add_actions(help_menu, (change_OD_action,))
+        change_dir_action = create_action(self, ("Change save dir"),
+                 triggered=self.change_save_dir)
+        add_actions(file_menu, (change_dir_action,))
         
 
         # Set central widget:
         self.mainwidget = CentralWidget(self)
         self.setCentralWidget(self.mainwidget)
 
-    def change_OD(self):
-        """Change the OD assumed in the equations"""
-        pass
+    def change_save_dir(self):
+        '''
+        '''
+        #self.mainwidget.save_dir = 'C:\\Users\\Brian\\'
+        name = QFileDialog.getExistingDirectory()
+        self.mainwidget.save_dir = str(name) + '\\'
+
+        handle = open(APP_DIR + '\\lm_ratiorc.txt', 'r')
+        params = json.load(handle)
+        if str(name) != '':
+            params['SAVE_DIR'] = str(name)  + '\\'
+            handle.close()
+            # write new directory
+            handle = open(APP_DIR + '\\lm_ratiorc.txt', 'w')
+            json.dump(params, handle)
+            handle.close()
+        else:
+            handle.close()
         
 if __name__ == '__main__':
     from guidata import qapplication
