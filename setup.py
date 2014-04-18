@@ -25,7 +25,7 @@ def create_executable():
                script="gui_LMratio.py", target_name="LMratio.exe")
                
     #spyderlib.add_to_distribution(dist)
-    dist.add_data_file('LEDspectra.csv')
+    dist.add_data_file('dat')
     dist.add_modules('guidata')
     dist.add_modules('guiqwt')
     dist.add_matplotlib()

@@ -14,7 +14,7 @@ class LMratio():
 	1. report error in estimate
 	'''
 
-	def __init__(self, LED_path='LEDspectra.csv'):
+	def __init__(self, LED_path='dat/LEDspectra.csv'):
 		'''
 		'''
 		self.cones = {}
