@@ -14,6 +14,7 @@ import spyderlib
 import git as git
 
 import base
+import appdirs
 
 Info = git.Repo()
     
@@ -23,8 +24,6 @@ def create_executable():
     dist.setup(name="LM ratio", version="0.2",
                description=u"A gui for computing LM ratio",
                script="gui_LMratio.py", target_name="LMratio.exe")
-               
-    #spyderlib.add_to_distribution(dist)
     dist.add_data_file('dat')
     dist.add_modules('guidata')
     dist.add_modules('guiqwt')
