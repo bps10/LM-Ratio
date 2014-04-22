@@ -25,6 +25,7 @@ def create_executable():
                description=u"A gui for computing LM ratio",
                script="gui_LMratio.py", target_name="LMratio.exe")
     dist.add_data_file('dat')
+    dist.add_data_file('lm_ratiorc.txt')
     dist.add_modules('guidata')
     dist.add_modules('guiqwt')
     dist.add_matplotlib()
